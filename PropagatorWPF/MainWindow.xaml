@@ -5,22 +5,24 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:PropagatorWPF"
         mc:Ignorable="d"
-        Title="Разослать по рабочим столам" Height="450" Width="500">
+        Title="Разослать по рабочим столам" Height="450" Width="500" Loaded="Window_Loaded">
     <Grid>
         <Grid.RowDefinitions >
             <RowDefinition Height="10"/>
             <RowDefinition Height="50"/>
             <RowDefinition Height="*"/>
-            <RowDefinition Height="100"/>
+            <RowDefinition Height="80"/>
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="10"/>
             <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="*"/>
             <ColumnDefinition Width="10"/>
         </Grid.ColumnDefinitions>
-        <TextBlock Grid.Row="1" Grid.Column="1" Text="Распространить следующие элементы:" FontSize="20" VerticalAlignment="Center"/>
-        <ListView x:Name="lvArm" Grid.Row="2" Grid.Column="1">
+        <TextBlock Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" Text="Распространить следующие элементы:" FontSize="20" VerticalAlignment="Center"/>
+        <TextBlock x:Name="tBlCount" Grid.Row="1" Grid.Column="2" Text="8"  FontSize="20" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="50,0,0,0" FontWeight="SemiBold" />
+        <ListView x:Name="lvArm" Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="2">
         </ListView>
-        <Button Grid.Row="3" Grid.Column="1" Width="200" Height="60" Content="Распространить" FontSize="22"/>
+        <Button Grid.Row="3" Grid.Column="1" Grid.ColumnSpan="2" Width="180" Height="55" Content="Распространить" FontSize="22" Click="Button_Click"/>
     </Grid>
 </Window>
