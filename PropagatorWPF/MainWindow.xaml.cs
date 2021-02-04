@@ -27,10 +27,10 @@ namespace PropagatorWPF
         }
 
         DirectoryInfo resoursePath = new DirectoryInfo(AppDomain.CurrentDomain.BaseDirectory + "Resources");
+        DirectoryInfo copyTo = new DirectoryInfo(Environment.GetFolderPath(Environment.SpecialFolder.Desktop)); //Environment.GetFolderPath() !! don;t forget otherwise it roots from Debug..
         IList<string> resourseList = new List<string>();
         int countResItems;
-
-        DirectoryInfo copyTo = new DirectoryInfo(Environment.GetFolderPath(Environment.SpecialFolder.Desktop)); //Environment.GetFolderPath() !! don;t forget otherwise it roots from Debug..
+        string pathArm = AppDomain.CurrentDomain.BaseDirectory + @"Arm.csv";
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
@@ -53,8 +53,15 @@ namespace PropagatorWPF
         {
             if (countResItems > 0)
             {
-                CopyAll(resoursePath, copyTo);
-                MessageBox.Show("Готово!");
+                if (File.Exists(pathArm))
+                {
+                    CopyAll(resoursePath, copyTo);
+                    MessageBox.Show("Готово!");
+                }
+                else
+                {
+                    MessageBox.Show("Нет информации по целевым АРМ");
+                }
             }
             else
             {
