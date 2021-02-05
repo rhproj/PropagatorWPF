@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net.NetworkInformation;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -27,17 +29,17 @@ namespace PropagatorWPF
         }
 
         DirectoryInfo resoursePath = new DirectoryInfo(AppDomain.CurrentDomain.BaseDirectory + "Resources");
-        DirectoryInfo copyTo = new DirectoryInfo(Environment.GetFolderPath(Environment.SpecialFolder.Desktop)); //Environment.GetFolderPath() !! don;t forget otherwise it roots from Debug..
-        IList<string> resourseList = new List<string>();
+        //DirectoryInfo copyTo = new DirectoryInfo(Environment.GetFolderPath(Environment.SpecialFolder.Desktop)); //Environment.GetFolderPath() !! don;t forget otherwise it roots from Debug..
+        List<string> resourseList = new List<string>();
         int countResItems;
         string pathArm = AppDomain.CurrentDomain.BaseDirectory + @"Arm.csv";
+        List<string> armsList = new List<string>();
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             if (resoursePath.Exists)
             {
-                countResItems = ListAll(resoursePath, resourseList);
-                
+                countResItems = ListAll(resoursePath, resourseList);              
                 //lvArm.Items.Add(resoursePath);
             }
             else
@@ -45,17 +47,85 @@ namespace PropagatorWPF
                 resourseList.Add("Проверьте наличие папки 'Resources'");
             }
 
-            lvArm.ItemsSource = resourseList;
+            //lvArm.ItemsSource = resourseList;
+            foreach (var r in resourseList)
+            {
+                tBArm.Text += r + Environment.NewLine;
+            }
+
             tBlCount.Text = countResItems.ToString();
         }
 
-        private void Button_Click(object sender, RoutedEventArgs e)
+        private async void Button_Click(object sender, RoutedEventArgs e)
         {
+            Application.Current.Dispatcher.Invoke(() => {Mouse.OverrideCursor = Cursors.Wait;});
+
+            tBArm.Text = string.Empty;
+
             if (countResItems > 0)
             {
                 if (File.Exists(pathArm))
                 {
-                    CopyAll(resoursePath, copyTo);
+                    List<string> armsOn = new List<string>();
+                    List<string> armsOff = new List<string>();
+                    armsOff.Add("Отсутствует соединение с:");
+
+                    using (StreamReader sR = new StreamReader(pathArm, Encoding.Default))
+                    {
+                        while (!sR.EndOfStream)
+                        {
+                            string[] armLine = sR.ReadLine().Split(';');
+                            armsList.Add(armLine[0]);
+                            //armsList.Add($@"\\{armLine[0]}\c$\Users");
+                        }
+                    }
+
+                    foreach (var arm in armsList)
+                    {
+                        Ping ping = new Ping();
+                        PingReply pingReply = await ping.SendPingAsync(arm); //Send(arm);
+
+                        if (pingReply.Status == IPStatus.Success)
+                        {
+                            armsOn.Add($@"\\{arm}\c$\Users");
+                        }
+                        else
+                        {
+                            armsOff.Add(arm);
+                        }
+                    }
+
+                    foreach (var arm in armsOn)
+                    {
+                        if (Directory.Exists(arm))
+                        {
+                            var dirsArm = Directory.GetDirectories(arm).Where(d => Regex.IsMatch(d, @"\.[A-Za-z]+\.")); //"rh"));//   //(d, @"[.]{1}")); //([\w+\.{1}\w+\.{1}\w+])
+
+                            //Regex rx = new Regex(@"\.[A-Za-z]+\.");
+
+                            foreach (var dir in dirsArm)
+                            {
+                                var userDirs = Directory.GetDirectories(dir).Where(d => Regex.IsMatch(d, @"Desktop")); // @"Documents"));
+
+                                foreach (var u in userDirs)
+                                {//\\192.168.1.114\c$\Users\rh\Desktop
+                                    //tBArm.Text += u + Environment.NewLine;
+                                    CopyAll(resoursePath, new DirectoryInfo(u));
+                                }
+
+                            }
+                        }
+                        else
+                        {
+                            MessageBox.Show($"{arm} не является АРМом");
+                        }
+                    }
+                    
+                    foreach (var a in armsOff)
+                    {
+                        tBArm.Text += a + Environment.NewLine;
+                    }
+
                     MessageBox.Show("Готово!");
                 }
                 else
@@ -68,6 +138,8 @@ namespace PropagatorWPF
                 MessageBox.Show("Папка ресурсов пуста!");
                 Application.Current.Shutdown();
             }
+
+            Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
         }
 
         private void CopyAll(DirectoryInfo fromD, DirectoryInfo toD)
@@ -86,7 +158,9 @@ namespace PropagatorWPF
             }
         }
 
-        private int ListAll(DirectoryInfo fromD, IList<string> resourseList)
+
+        #region TEST method
+        private int ListAll(DirectoryInfo fromD, List<string> resourseList)
         {
             foreach (FileInfo fI in fromD.GetFiles())
             {
@@ -101,6 +175,36 @@ namespace PropagatorWPF
             }
 
             return resourseList.Count();
-        }
+        } 
+        #endregion
     }
+
+
+    //public class CustomSearcher
+    //{
+    //    public static List<string> GetDirectories(string path, string searchPattern = "*", SearchOption searchOption = SearchOption.AllDirectories)
+    //    {
+    //        if (searchOption == SearchOption.TopDirectoryOnly)
+    //            return Directory.GetDirectories(path, searchPattern).ToList();
+
+    //        var directories = new List<string>(GetDirectories(path, searchPattern));
+
+    //        for (var i = 0; i < directories.Count; i++)
+    //            directories.AddRange(GetDirectories(directories[i], searchPattern));
+
+    //        return directories;
+    //    }
+
+    //    private static List<string> GetDirectories(string path, string searchPattern)
+    //    {
+    //        try
+    //        {
+    //            return Directory.GetDirectories(path, searchPattern).ToList();
+    //        }
+    //        catch (UnauthorizedAccessException)
+    //        {
+    //            return new List<string>();
+    //        }
+    //    }
+    //}
 }
