@@ -29,7 +29,7 @@ namespace PropagatorWPF
         }
 
         DirectoryInfo resoursePath = new DirectoryInfo(AppDomain.CurrentDomain.BaseDirectory + "Resources");
-        //DirectoryInfo copyTo = new DirectoryInfo(Environment.GetFolderPath(Environment.SpecialFolder.Desktop)); //Environment.GetFolderPath() !! don;t forget otherwise it roots from Debug..
+        //DirectoryInfo copyTo = new DirectoryInfo(Environment.GetFolderPath(Environment.SpecialFolder.Desktop));
         List<string> resourseList = new List<string>();
         int countResItems;
         string pathArm = AppDomain.CurrentDomain.BaseDirectory + @"Arm.csv";
@@ -108,7 +108,7 @@ namespace PropagatorWPF
                                 var userDirs = Directory.GetDirectories(dir).Where(d => Regex.IsMatch(d, @"Desktop")); // @"Documents"));
 
                                 foreach (var u in userDirs)
-                                {//\\192.168.1.114\c$\Users\rh\Desktop
+                                {
                                     //tBArm.Text += u + Environment.NewLine;
                                     CopyAll(resoursePath, new DirectoryInfo(u));
                                 }
@@ -144,7 +144,7 @@ namespace PropagatorWPF
 
         private void CopyAll(DirectoryInfo fromD, DirectoryInfo toD)
         {
-            //Directory.CreateDirectory(toD.FullName); //don't need it in case of Desktop
+            //Directory.CreateDirectory(toD.FullName); //don't need this in case of Desktop
             //copy files
             foreach (FileInfo fI in fromD.GetFiles())
             {
@@ -178,33 +178,4 @@ namespace PropagatorWPF
         } 
         #endregion
     }
-
-
-    //public class CustomSearcher
-    //{
-    //    public static List<string> GetDirectories(string path, string searchPattern = "*", SearchOption searchOption = SearchOption.AllDirectories)
-    //    {
-    //        if (searchOption == SearchOption.TopDirectoryOnly)
-    //            return Directory.GetDirectories(path, searchPattern).ToList();
-
-    //        var directories = new List<string>(GetDirectories(path, searchPattern));
-
-    //        for (var i = 0; i < directories.Count; i++)
-    //            directories.AddRange(GetDirectories(directories[i], searchPattern));
-
-    //        return directories;
-    //    }
-
-    //    private static List<string> GetDirectories(string path, string searchPattern)
-    //    {
-    //        try
-    //        {
-    //            return Directory.GetDirectories(path, searchPattern).ToList();
-    //        }
-    //        catch (UnauthorizedAccessException)
-    //        {
-    //            return new List<string>();
-    //        }
-    //    }
-    //}
 }
